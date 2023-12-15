@@ -1,139 +1,96 @@
 #include <iostream>
 
-// Node structure to represent each element in the circular linked list
+template <typename T>
+T getInput(const std::string& prompt) {
+    T value;
+    std::cout << prompt;
+    std::cin >> value;
+    return value;
+}
 template <typename T>
 struct Node {
     T data;
     Node* next;
-
-    // Constructor
     Node(T value) : data(value), next(nullptr) {}
 };
 
-// CircularLinkedList class as an ADT
 template <typename T>
 class CircularLinkedList {
 private:
     Node<T>* head;
 
 public:
-    // Constructor
     CircularLinkedList() : head(nullptr) {}
 
-    // Destructor to free memory when the object is destroyed
     ~CircularLinkedList() {
-        if (head == nullptr) {
-            return;
-        }
-
-        Node<T>* current = head->next;
-        while (current != head) {
-            Node<T>* temp = current;
-            current = current->next;
+        while (head) {
+            Node<T>* temp = head;
+            head = head->next;
             delete temp;
+            if (head == temp) break; // Avoid infinite loop for a circular list with a single node
         }
-
-        delete head;
     }
 
-    // Function to insert an element in the list
     void insertElement(T value) {
         Node<T>* newNode = new Node<T>(value);
-
-        if (head == nullptr) {
-            head = newNode;
-            newNode->next = head;
-        } else {
+        if (!head) head = newNode, newNode->next = head;
+        else {
             Node<T>* last = head;
-            while (last->next != head) {
-                last = last->next;
-            }
-
-            last->next = newNode;
-            newNode->next = head;
+            while (last->next != head) last = last->next;
+            last->next = newNode, newNode->next = head;
         }
     }
 
-    // Function to remove an element from the list
     void removeElement(T value) {
-        if (head == nullptr) {
-            std::cerr << "List is empty" << std::endl;
-            return;
-        }
-
-        Node<T>* current = head;
-        Node<T>* prev = nullptr;
-
-        do {
-            if (current->data == value) {
-                if (current == head) {
-                    if (current->next == head) {
-                        // Only one element in the list
-                        delete head;
-                        head = nullptr;
-                    } else {
-                        Node<T>* last = head;
-                        while (last->next != head) {
-                            last = last->next;
+        if (!head) std::cerr << "List is empty\n";
+        else {
+            Node<T>* current = head, *prev = nullptr;
+            do {
+                if (current->data == value) {
+                    if (current == head) {
+                        if (current->next == head) head = nullptr;
+                        else {
+                            Node<T>* last = head;
+                            while (last->next != head) last = last->next;
+                            last->next = head->next, head = head->next;
                         }
-
-                        last->next = head->next;
-                        Node<T>* temp = head;
-                        head = head->next;
-                        delete temp;
-                    }
-                } else {
-                    prev->next = current->next;
+                    } else prev->next = current->next;
                     delete current;
+                    return;
                 }
-                return;
-            }
-
-            prev = current;
-            current = current->next;
-
-        } while (current != head);
-
-        std::cerr << "Element not found in the list" << std::endl;
+                prev = current, current = current->next;
+            } while (current != head);
+            std::cerr << "Element not found in the list\n";
+        }
     }
 
-    // Function to search for an element and return its pointer
     Node<T>* searchElement(T value) {
-        if (head == nullptr) {
-            return nullptr;
-        }
-
+        if (!head) return nullptr;
         Node<T>* current = head;
         do {
-            if (current->data == value) {
-                return current;
-            }
+            if (current->data == value) return current;
             current = current->next;
         } while (current != head);
-
         return nullptr;
     }
 
-    // Function to display the elements in the list
     void display() {
-        if (head == nullptr) {
-            std::cout << "List is empty" << std::endl;
-            return;
+        if (!head) std::cout << "List is empty\n";
+        else {
+            Node<T>* current = head;
+            do {
+                std::cout << current->data << " ";
+                current = current->next;
+            } while (current != head);
+            std::cout << std::endl;
         }
-
-        Node<T>* current = head;
-        do {
-            std::cout << current->data << " ";
-            current = current->next;
-        } while (current != head);
-        std::cout << std::endl;
     }
 };
 
 int main() {
     CircularLinkedList<int> myList;
-
     int choice;
+
     do {
         std::cout << "\n1. Insert an element\n"
                      "2. Remove an element\n"
@@ -144,41 +101,17 @@ int main() {
         std::cin >> choice;
 
         switch (choice) {
-            case 1: {
-                int value;
-                std::cout << "Enter the value to insert: ";
-                std::cin >> value;
-                myList.insertElement(value);
-                break;
-            }
-            case 2: {
-                int value;
-                std::cout << "Enter the value to remove: ";
-                std::cin >> value;
-                myList.removeElement(value);
-                break;
-            }
+            case 1: myList.insertElement(getInput<int>("Enter the value to insert: ")); break;
+            case 2: myList.removeElement(getInput<int>("Enter the value to remove: ")); break;
             case 3: {
-                int value;
-                std::cout << "Enter the value to search: ";
-                std::cin >> value;
-                Node<int>* result = myList.searchElement(value);
-                if (result != nullptr) {
-                    std::cout << "Element " << value << " found at address: " << result << std::endl;
-                } else {
-                    std::cout << "Element " << value << " not found in the list." << std::endl;
-                }
+                Node<int>* result = myList.searchElement(getInput<int>("Enter the value to search: "));
+                if (result) std::cout << "Element found at address: " << result << std::endl;
+                else std::cout << "Element not found in the list.\n";
                 break;
             }
-            case 4:
-                std::cout << "Circular Linked List: ";
-                myList.display();
-                break;
-            case 0:
-                std::cout << "Exiting program.\n";
-                break;
-            default:
-                std::cout << "Invalid choice. Try again.\n";
+            case 4: std::cout << "Circular Linked List: "; myList.display(); break;
+            case 0: std::cout << "Exiting program.\n"; break;
+            default: std::cout << "Invalid choice. Try again.\n";
         }
 
     } while (choice != 0);
