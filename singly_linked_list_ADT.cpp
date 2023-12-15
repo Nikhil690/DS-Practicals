@@ -1,116 +1,76 @@
 #include <iostream>
 
-// Node structure to represent each element in the linked list
 template <typename T>
 struct Node {
     T data;
     Node* next;
-
-    // Constructor
     Node(T value) : data(value), next(nullptr) {}
 };
 
-// SinglyLinkedList class
 template <typename T>
 class SinglyLinkedList {
 private:
     Node<T>* head;
 
 public:
-    // Constructor
     SinglyLinkedList() : head(nullptr) {}
 
-    // Function to insert an element at the beginning of the list
     void insertAtBeginning(T value) {
+    Node<T>* newNode = new Node<T>(value);
+    newNode->next = head;
+    head = newNode;
+    }
+
+
+    void insertAtPosition(int i, T value) {
+        if (i <= 0) { return; }
         Node<T>* newNode = new Node<T>(value);
-        newNode->next = head;
+        newNode->next = (i == 1) ? head : head->next;
+        if (i != 1) {
+            Node<T>* current = head;
+            for (int pos = 1; pos < i - 1 && current != nullptr; ++pos) {
+                current = current->next;
+            }
+            if (current != nullptr) { current->next = newNode; }
+        }
         head = newNode;
     }
 
-    // Function to insert an element at position i in the list
-    void insertAtPosition(int i, T value) {
-        if (i <= 0) {
-            std::cerr << "Invalid position" << std::endl;
-            return;
-        }
-
-        Node<T>* newNode = new Node<T>(value);
-
-        if (i == 1) {
-            newNode->next = head;
-            head = newNode;
-            return;
-        }
-
-        Node<T>* current = head;
-        for (int pos = 1; pos < i - 1 && current != nullptr; ++pos) {
-            current = current->next;
-        }
-
-        if (current == nullptr) {
-            std::cerr << "Invalid position" << std::endl;
-            delete newNode;
-            return;
-        }
-
-        newNode->next = current->next;
-        current->next = newNode;
-    }
-
-    // Function to remove an element from the beginning of the list
     void removeFromBeginning() {
-        if (head == nullptr) {
-            std::cerr << "List is empty" << std::endl;
-            return;
+        if (head != nullptr) {
+            Node<T>* temp = head;
+            head = head->next;
+            delete temp;
         }
-
-        Node<T>* temp = head;
-        head = head->next;
-        delete temp;
     }
 
-    // Function to remove an element from position i in the list
     void removeFromPosition(int i) {
-        if (i <= 0 || head == nullptr) {
-            std::cerr << "Invalid position or list is empty" << std::endl;
-            return;
-        }
-
+        if (i <= 0 || head == nullptr) { return; }
         if (i == 1) {
             Node<T>* temp = head;
             head = head->next;
             delete temp;
             return;
         }
-
         Node<T>* current = head;
         for (int pos = 1; pos < i - 1 && current != nullptr; ++pos) {
             current = current->next;
         }
-
-        if (current == nullptr || current->next == nullptr) {
-            std::cerr << "Invalid position" << std::endl;
-            return;
+        if (current != nullptr && current->next != nullptr) {
+            Node<T>* temp = current->next;
+            current->next = current->next->next;
+            delete temp;
         }
-
-        Node<T>* temp = current->next;
-        current->next = current->next->next;
-        delete temp;
     }
 
-    // Function to search for an element and return its pointer
     Node<T>* searchElement(T value) {
         Node<T>* current = head;
-        while (current != nullptr) {
-            if (current->data == value) {
-                return current;
-            }
+        while (current != nullptr && current->data != value) {
             current = current->next;
         }
-        return nullptr;
+        return current;
     }
 
-    // Function to display the elements in the list
     void display() {
         Node<T>* current = head;
         while (current != nullptr) {
